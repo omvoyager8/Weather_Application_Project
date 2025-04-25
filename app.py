@@ -128,8 +128,12 @@ class NLPapp:
         self.lon_input = Entry(self.root, width=25, font=("Arial", 12))
         self.lon_input.pack(pady=(5, 5), ipady=1, padx=10)
 
-        search_by_coordinates_btn = Button(self.root, text="Search", width=10, command=self.search_by_coordinates, bg="#27AE60", fg="white", font=("Arial", 12, "bold"))
+        search_by_coordinates_btn = Button(self.root, text="Search", width=10, command=self.display_info_by_coordinates, bg="#27AE60", fg="white", font=("Arial", 12, "bold"))
         search_by_coordinates_btn.pack(pady=(5, 5))
+
+        self.result = Text(self.root, width=40, height=15, wrap=WORD, bg='#2C3E50', fg='#ECF0F1')
+        self.result.configure(font=("Cambria", 12, "italic"))
+        self.result.pack(pady=(5, 5))
 
         back_btn = Button(self.root, text="Back", width=10, command=self.home, bg="#E74C3C", fg="white", font=("Arial", 12, "bold"))
         back_btn.pack(pady=(5, 5))
@@ -167,7 +171,8 @@ class NLPapp:
             self.result.tag_configure('error', font=("Cambria", 12, "italic"), foreground="#E74C3C")
 
             self.result.config(state=DISABLED)  # Make the text read-only
-
+            
+            
     def register(self):
         """Render the registration page."""
         self.clear()
@@ -215,6 +220,37 @@ class NLPapp:
             messagebox.showerror(title="Failed", message="Email already exists")
         else:
             messagebox.showwarning(title="Error", message="Something went wrong, please try again later")
+
+    def display_info_by_coordinates(self):
+        """Display weather info using coordinates."""
+        lat = self.lat_input.get()
+        lon = self.lon_input.get()
+        data = self.api.get_info_by_coordinates(lat, lon)
+
+        self.result.config(state=NORMAL)
+        self.result.delete(1.0, END)
+
+        if "error" in data:
+            self.result.insert(END, data["error"], ('error',))
+        else:
+            self.result.insert(END, "Weather Information:\n", ('heading',))
+            self.result.insert(END, f"Latitude: {lat}, Longitude: {lon}\n", ('info',))
+            self.result.insert(END, f"Current Temperature: {data['current_temperature']}\n", ('temperature',))
+            self.result.insert(END, f"Weather: {data['weather']}\n", ('info',))
+            self.result.insert(END, f"Humidity: {data['humidity']}\n", ('info',))
+            self.result.insert(END, f"Sunrise: {data['sunrise']}\n", ('info',))
+            self.result.insert(END, f"Sunset: {data['sunset']}\n", ('info',))
+            self.result.insert(END, f"Country: {data['country']}\n", ('info',))
+
+        # Text styling
+        self.result.tag_configure('heading', font=("Cambria", 14, "bold"), foreground="#ECF0F1")
+        self.result.tag_configure('info', font=("Cambria", 12, "italic"), foreground="#BDC3C7")
+        self.result.tag_configure('temperature', font=("Cambria", 12, "bold"), foreground="#E74C3C")
+        self.result.tag_configure('error', font=("Cambria", 12, "italic"), foreground="#E74C3C")
+
+        self.result.config(state=DISABLED)
+
+
 
 if __name__ == "__main__":
     NLPapp()

@@ -38,3 +38,24 @@ class Api:
             "sunset": dt.datetime.fromtimestamp(data['sys']['sunset']).strftime("%A, %B %d, %Y %I:%M:%S %p"),
             "country": data['sys']['country']
         }
+    def get_info_by_coordinates(self, lat, lon):
+        """Fetch and return weather info using latitude and longitude."""
+        try:
+            lat = float(lat)
+            lon = float(lon)
+            response = requests.get(self.base_url, params={
+                'lat': lat,
+                'lon': lon,
+                'appid': self.api_key
+            })
+            data = response.json()
+
+            if response.status_code == 200 and self._is_valid_response(data):
+                return self._format_weather_data(data)
+            else:
+                return {"error": "Invalid coordinates or response from API"}
+        except requests.RequestException as e:
+            return {"error": f"Request failed: {e}"}
+        except Exception as e:
+            return {"error": f"An unexpected error occurred: {e}"}
+        
